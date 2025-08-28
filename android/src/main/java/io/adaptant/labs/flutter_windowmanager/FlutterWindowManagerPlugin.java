@@ -14,7 +14,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** FlutterWindowManagerPlugin */
 public class FlutterWindowManagerPlugin implements MethodCallHandler, FlutterPlugin, ActivityAware {
@@ -27,27 +26,25 @@ public class FlutterWindowManagerPlugin implements MethodCallHandler, FlutterPlu
     this.activity = activity;
   }
 
-  /** Plugin registration. */
-  @Deprecated
-  public static void registerWith(Registrar registrar) {
-    new FlutterWindowManagerPlugin(registrar.activity()).registerWith(registrar.messenger());
+
+
+private MethodChannel channel;
+
+@Override
+public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+  channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_windowmanager");
+  channel.setMethodCallHandler(this);
+}
+
+
+@Override
+public void onDetachedFromEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+  if (channel != null) {
+    channel.setMethodCallHandler(null);
+    channel = null;
   }
+}
 
-  private void registerWith(BinaryMessenger binaryMessenger) {
-    final MethodChannel channel = new MethodChannel(binaryMessenger, "flutter_windowmanager");
-    channel.setMethodCallHandler(this);
-  }
-
-
-  @Override
-  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    registerWith(flutterPluginBinding.getBinaryMessenger());
-  }
-
-  @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-
-  }
 
   /**
    * Validate flag specification against WindowManager.LayoutParams and API levels, as per:
